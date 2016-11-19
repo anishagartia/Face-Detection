@@ -1,0 +1,476 @@
+<html>
+<head>
+<title>Face Detection Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;	
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 1160px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td img {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+    <H1 style = "text-transform: capitalize" ><span style="color: #DE3737">Anisha Gartia <br> GTID: 903136557</span></H1>
+</div>
+</div>
+<div class="container">
+
+<h2> Project 5: Face Detection with a Sliding Window</h2>
+
+
+<!--------------------------------------------------------------------------->
+
+<p>
+    In this project, we perform the task of Face Detection. Face detection is used in various imagine tasks, and even in common objects like camera as shown in the image. The main method used is generation of Histogram Oriented Gradient features using Sliding window, as described in Dalal-Triggs paper. For classifying the sliding windows, we train a linear SVM.
+</p>
+
+    <div align = "center">
+        <img src="camera.png" width="30%"/>
+        <p style="font-size: 16px"> Example of Face detection</p>
+    </div>
+
+<p>
+    In addition to the base implementation, we also implement various add-on techniques to observe and contrast the performance. The performance is compared based on Average Precision, ROC curve and values of confusion matrix (True Positives, False Negatives etc.). We implement the following extra techniques:
+</p>
+
+<ol>
+<li>Implementation of HOG feature descriptor from scratch</li>
+<li>Negative Hard Mining</li>
+<li>Additional Dataset of positive training images</li>
+<li>Implementation of Dense Neural Network in Python (using Keras) for classification.</li>
+</ol>
+
+<p>
+    The base implementation is quite fast. One complete run can take anywhere from 25s to 2min depending on parameters like HOG cell size, threshold for SVM classification, etc. The training images is the Caltech face dataset, cropped to 36 x 36 sized faces. The non-face training images are random (36 x 36) sized crops of non-face scene images.
+</p>
+
+<!--------------------------------------------------------------------------->
+<div style="clear:both">
+<h2>I. Histogram of Gradients using Linear SVM Classifier</h2>
+
+<p>
+    Histogram of oriented Gradients decomposes the image into square cells of a given size (typically eight pixels), compute a histogram of oriented gradient in each cell, and then re-normalizes the cells by looking into adjacent blocks. We use vl_feat library to achieve this in Matlab. The main tuning parameter here is the cell size. Each (n x n) dimension cell in the image is described as a (n x n x 31) feature. In our project, the training images are 36 x 36 pixels. We use two cell sizes to contrast the performance.
+</p>
+
+<ol>
+<li>HOG cell size 6x6</li>
+<li>HOG cell size 3x3</li>
+</ol>
+
+<p>
+   Once we have have our feature descriptors for faces and non-faces, we must be able to classify a previously unseen image patch. To do so, we train a linear SVM, and tune the lambda parameter to get W and b. This W and b can now be used to classify any new image based on a threshold. We can eliminate the threshold parameter by simply retaining only the top or highest values obtained from (W'*X + b). Here, we tune a threshold as the number of faces in the test image is unknown. Patches of test image whose feature descriptor has a value of (W'*X + b) higher than threshold is classified as face. <br> To account for face detection of multiple sizes, we train the faces at multiple scale. The scales used in this project are [1, 0.9, 0.7, 0.5, 0.3, 0.1]. Thus, when we have a test image with a larger than trained template (36x36 in our case) size face in it, it will be detected at a low scale on resizing it. HOG feature descriptor gives is the template histograms, which can be visualized as shown below.
+</p>
+
+    <table>
+        <tr>
+        <td>
+            <div align = "center">
+                <img src="HOG6x6.png" width="100%"/>
+                <p style="font-size: 16px">6x6 HOG cell, Precision Recall Curve.</p>
+            </div>
+        </td>
+        <td>
+            <div align = "center">
+                <img src="hog_6x6_4.png" width="95%"/>
+                <p style="font-size: 16px">Parameter Tuning.</p>
+            </div>
+        </td>
+        </tr>
+
+        <tr>
+        <td>
+            <div align = "center">
+                <img src="hog_6x6_2.png" width="100%"/>
+                <p style="font-size: 16px">6x6 HOG cell, Bounding Boxes.</p>
+            </div>
+        </td>
+        <td>
+            <div align = "center">
+                <img src="HOG6x6_3.png" width="90%"/>
+                <p style="font-size: 16px">6x6 HOG cell, HOG Template.</p>
+            </div>
+        </td>
+        </tr>
+    </table>
+    <p align=center style="font-size: 20px">Figure : Example of a good model with 6x6 HOG cell.</p>
+
+    <table>
+        <tr>
+        <td>
+            <div align = "center">
+                <img src="hog_3x3.png" width="90%"/>
+                <p style="font-size: 16px"> 3x3 HOG cell, Precision Recall Curve.</p>
+            </div>
+
+        </td>
+        <td>
+            <div align = "center">
+                <img src="scales.png" width="90%"/>
+                <p style="font-size: 16px"> Successful detection at multiple scales.</p>
+            </div>
+        </td>
+        </tr>
+
+        <tr>
+        <td>
+            <div align = "center">
+                <img src="hog_3x3_2.png" width="100%"/>
+                <p style="font-size: 16px">3x3 HOG cell, Bounding Boxes.</p>
+            </div>
+        </td>
+        <td>
+            <div align = "center">
+                <img src="hog_3x3_3.png" width="90%"/>
+                <p style="font-size: 16px">3x3 HOG cell, HOG Template.</p>
+            </div>
+        </td>
+        </tr>
+    </table>
+    <p align=center style="font-size: 20px">Figure : Example of a good model with 3x3 HOG cell.</p>
+
+
+
+<p>
+    Sliding window method: In this method, we find the HOG descriptors of patches of test image, and classiify is using the classifier we trained. For this, various Matlab functions like blockproc, and vl_feat libraries like vl_hog are used. Tuning parameter is the threshold for classifying.
+</p>
+
+<h3>Analysis for results of HOG and SVM Classifier:</h3>
+<p>
+    The free parameters in this test give us varied results. The Linear SVM was easy to train to get good accuracy. In fact, almost all values of lambda from 0.0001 to 0.1 gave a classifier resulting in 99.9% - 100% train accuracy. Hence in order to avoid over fitting, we tuned it to get a classifier with slightly lower train accuracy. Lambda of 0.005 to 0.0001 gave us acceptable results. <br> The second parameter, the threshold, played an extremely important role in the number of misclassificatied bounding boxes etc. Lower the threshold, more number of bounding boxes are classified as true, thus leading to high false positives. As we can see in the parameters image above, low threshold implies more pollution, leading to off-chance true bounding boxes, giving high Average Precision. This is is a false-well performing model.
+</p>
+
+    <div align = "center">
+        <img src="pollution.png" width="45%"/>
+        <p style="font-size: 16px">Figure : Example of how very low threshold will give a off-chance good detection due to pollution.</p>
+    </div>
+
+
+    <p>
+    Increase in threshold implies less bounding boxes are passed into the non-max suppression. Thus this gives a better model with lesser false positives. The downside is that, as we keep increasing the threshold, the number true positives may also be lost.
+</p>
+    <!--------------------------------------------------------------------------->
+
+<h2><b>EXTRA CREDIT</b></h2>
+<h2>II. Implementing a HOG descriptor.</h2>
+<p>
+    For Implementing a Histogram of Oriented Gradients, we followed the following steps:
+</p>
+
+<ol>
+<li>
+    Gamma Normalization and compression:<br>
+    This is done by computing the square root of the image.
+</li>
+<li>
+    Gradient Computation:<br>
+    Gradient of the image is computed in X and Y direction using filter [-1, 0, 1] and [-1; 0; 1]. The magnitude and angle is computed as sqrt of sum of squares of the gradients in each direction. The angle is computed as arctan of the gradients.
+</li>
+<li>
+    Histogram of gradient orientations ob each cell:<br>
+    Histogram is taken in 9 bins. To improve performance, a weighted histogram is computed, where each point weigh is decided by it's magnitude. Additionally, bilinear interpolation is performed. This means that if a angle is far away from the centre of the bin, it's weight is distributed proportionately between the two adjacent bins.
+</li>
+<li>
+    Contrast Normalization:<br>
+    We perform normalization of each cell. In addition, to smoothen out the normalization function, we perfom normalization with respect to boundary cells as well. The boundary used here is 2x2. Hence, for each cell, we will have 4 boundary normalizations, thus resulting in 4 features. Thus the dimension of HOG feature is num_cells x num_cell x (num_orientations * num_boundary). In our case with 36x36 image, and 6x6 cell size, the HOG descriptor is 6x6x(9*4), giving us (6x6x36). The vl_hog gives us (6x6x31) as they use UoCCTI, where as we use Dalal-Triggs method.
+</li>
+</ol>
+
+    <div align = "center">
+        <img src="my_hog_flow.png" width="90%"/>
+        <p style="font-size: 16px">Figure : Implementation of HOG, Flow of steps.</p>
+    </div>
+
+<table>
+    <tr>
+    <td>
+        <div align = "center">
+            <img src="my_hog_roc.png" width="80%"/>
+            <p style="font-size: 16px">Figure : Implementation of HOG, Precision Recall Curve.</p>
+        </div>
+    </td>
+    <td>
+        <div align = "center">
+            <img src="my_hog_2.png" width="90%"/>
+            <p style="font-size: 16px">Figure : Implementation of HOG, Bounding Boxes.</p>
+        </div>
+    </td>
+    </tr>
+</table>
+
+
+
+
+
+<h3>Analysis for implementing HOG Descriptor:</h3>
+<p>
+    As we have so many computations for gennrating HOG descriptor, we have used blockproc to parallelize the processes. Due to computational limitation, it is an extremely long execution. To increase the speed, we have compromised the advantages of contrast normalization to use simple normalization of blocks of the image. This speedens up the process, and one run can complete in about an hour. <br>In the interest of time, the positive and negative training features are saved as .mat files. features_pos_myhog.mat and features_neg_myhog.mat. These can me loaded and used anytime with get_hog_feats(...).
+</p>
+
+<p>
+    The implementation is the same as vl_hog. But the performance suffers for the same parameters as with vl_hog. The Average Precision reduces from 83.5 for a well trained model to 79.6 (best) with out own implementation of HOG. This is probably due to the inaccurate normalization used. Additionally, we reshape the features multiple times, and the order of histograms may be lost. Although it would ideally not matter as the same implementation is used to obtain train and test hog features, the information is jumbled up which may result in the performance slip we observe.
+</p>
+
+    <!--------------------------------------------------------------------------->
+<h2>III. Negative Hard Mining</h2>
+<p>
+    Negative hard mining is the technique to make the classifier more robust by taking taking into consideration the mis-classifications we get in the training data itself. Thus, we have the following sequence of events:
+</p>
+<ol>
+<li>Train a Linear SVM using the provided train data. With this, we get a linear classifier described by [W,b] say.</li>
+<li>Use the above linear classifier to classify the positive train data. We will inherently have a few mis-classifications. Thus, these are the features that will make the model more robust if added to negative features. Out model now knows the features in 'faces' that may be characteristic of non-faces.</li>
+<li>The features are detected by essentially finding the HOG features of the image using sliding window. Thus, we effectively use sliding window facial detection twice in this technique.</li>
+<li>Append the mis-classified 'face' images features to features_neg.</li>
+<li>Re-train a Linear SVM using the new training data.</li>
+</ol>
+<table>
+    <tr>
+    <td>
+        <div align = "center">
+            <img src="hard_ming_roc.png" width="90%"/>
+            <p style="font-size: 16px">Figure : 3x3 HOG cell with Hardmining.</p>
+        </div>
+    </td>
+    <td>
+        <div align = "center">
+            <img src="hard_box.png" width="90%"/>
+            <p style="font-size: 16px">Figure : Almost no mis-classification with hardmining.</p>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <div align = "center">
+            <img src="test_misclas.png" width="90%"/>
+            <p style="font-size: 16px">Small font Text is easily misclassified as small scale images.</p>
+        </div>
+    </td>
+    <td>
+        <div align = "center">
+            <img src="hard_text.png" width="105%"/>
+            <p style="font-size: 16px">Hard Mining makes the classification robust.</p>
+        </div>
+    </td>
+    </tr>
+</table>
+
+
+    <h3>Analysis for Using Negative Hard Mining:</h3>
+<p>
+    With negative hard mining, the average precision increases by a few points. More notably, the false positives almost disappear. This can be reasoned as a result of robust classification. For a cell size of 3x3, we observe an  performance to achieve Average Precision of 85.6. There are ~0-1 false positive bounding boxes per image. Most important part of Negative hard mining is that it does not effect the true positives.<br> Thus, with a good classifier, we can obtain high precision and high recall for low values of threshold.The effect of NEgative hard mining does not slow down the execution too much. We can have a 6x6 cell size vl_hog in about 33s. <br>We have tuned the model such that we don't have too many additional negative features from hard mining. This can result in imbalanced training. At present, the tuning we have done adds ~500 negative features. Thus, we finally have ~6000 positive features, and ~1700 negative features. An attempt to increase the robustness further will simply train a classifier that easily classifies images as non-face.
+</p>
+
+
+    <!--------------------------------------------------------------------------->
+<h2>IV. Alternative positive training data (LFW DataSet):</h2>
+
+<p>
+    Negative hard mining increases the number of negative features. To balance this out, we trainined the model using additional positive images. The dataset used is LFW dataset. As our caltech mages were cropped and cleaned, we had to do the same with LFW as well. This is done as follows:
+</p>
+
+ <ol>
+<li>Populate a list of all the files present in the dataset.</li>
+<li>Read all images.</li>
+<li>Run sliding window HOG face detector on LFW dataset. This detects the faces, and provides us with bounding boxes that surrounds the faces.</li>
+<li>To match Caltech cropped images, the original LFW image is cropped slightly larger than the detected bounding box. This is done to maintain symmetry in image features.</li>
+<li>To match Caltech cropped images, the patches are the resized to 36x36.</li>
+
+</ol>
+<p>
+An example of raw LFW image, a image after cleaning and cropping is shown below. To use this data, we can then read it in the same way as we read Caltech images, and vertically stack both the datasets.
+</p>
+
+     <table>
+         <tr>
+         <td>
+             <div align = "center">
+                 <img src="Aaron_Eckhart_0001.jpg" width="55%"/>
+                 <p style="font-size: 16px">Figure : Original Image from LFW dataset.</p>
+             </div>
+         </td>
+         <td>
+             <div align = "center">
+                 <img src="Aaron_Eckhart_0001_crop.jpg" width="15%"/>
+                 <p style="font-size: 16px">Figure : Cropped Image from LFW dataset for training (36x36).</p>
+             </div>
+         </td>
+         </tr>
+     </table>
+
+
+
+<h3>Analysis of appending LFW Positive face dataset:</h3>
+<p>
+   The most noticable change after appending LFW dataset is the steep increase in number of positive train data. We now have ~20000 positive train features. As a result, out model's accuracy is not increasing visibly. With good tuning, we can arrive at a model that successfully removes false negatives. As mentioned above, this can be a result of biased classifier.<br>In an attempt to balance out the training dataset, we combined LFW dataset, along with hard mining. The time of execution was too high for this combination, with very low change is average precision, and the precision-recall curve was almost the same.
+</p>
+
+
+    <div align = "center">
+        <img src="lfw.png" width="75%"/>
+        <p style="font-size: 16px">Figure : Training using LFW dataset.</p>
+    </div>
+
+ <!--------------------------------------------------------------------------->
+<h2>V. Additional Classification Schemes (Dense Neural Network):</h2>
+
+<p>
+    The next technique we used was using an additional classifier. We trained a neural network. This is an implementation of the paper DeepFaces by Yaniv Taigman Et. al. The model is as shown below
+</p>
+
+<p>
+    This neural network has been implemented python, and the model is saved in as nn_model.h5 in the code folder. The optimizer used is stochastic gradient descent. The model has been built using Keras library. It is a sequential model, with categorical one hot encoding labels. The python code which trains the model reads the Caltech train image dataset, and generates random non-face image patches to train the neural network. Thus, no input is required to be fed to it. The model is required to be trained once, and the python code saves it.<br>We use thie neural network as an additional classification scheme after detecting the bounding boxes using HOG and SVM. Once we have our bounding boxes, we save the file image name, and the bounding box coordinates to a csv file titled bboxes_for_nnet.csv in code folder. Another python script titled test_model.py evaluates the test bounding boxes and returns a array of classification as 0 and 1. This is then used by our matlab code to obtain a final detection. <br>Only those bounding boxes that are classified by both the SVM and neural network is classified as a face.
+</p>
+
+
+    <div align = "center">
+        <img src="nn_network.png" width="75%"/>
+        <p style="font-size: 16px">Figure : Neural Network.</p>
+    </div>
+
+    <div align = "center">
+        <img src="nn_roc.png" width="75%"/>
+        <p style="font-size: 16px">Figure : Precision Recall curve</p>
+    </div>
+
+    <div align = "center">
+        <img src="detections_hendrix1-bigger_2.jpg" width="45%"/>
+        <p style="font-size: 16px">Figure : Good Detection with Neural Network</p>
+    </div>
+
+<h3>Analysis of using an additional Neural Network classifier:</h3>
+<p>
+    The performance of adding a Neural Network classifier gives us extremely fluctuating results. The final detection is a lot more dependent on the HOG and SVM parameters. In our analysis, we attempted to pass many bounding boxes to the neural network for classification. In multiple executions of the same code with different parameters, we achieved a highest Average Precision of 88.6 with ~1-2 false positives. The execution time once the neural network was trained was comparable to few other techniques like LFW dataset. Reducing the learning rate of the optimizer, and adding an early stopping callback increased the perfomance in terms of training time.
+</p>
+
+
+    <!--------------------------------------------------------------------------->
+
+
+
+</body>
+</html>
