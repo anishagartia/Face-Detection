@@ -5,10 +5,12 @@ In this project, we perform the task of Face Detection. Face detection is used i
 
 In addition to the base implementation, we also implement various add-on techniques to observe and contrast the performance. The performance is compared based on Average Precision, ROC curve and values of confusion matrix (True Positives, False Negatives etc.). We implement the following extra techniques:
 
-Implementation of HOG feature descriptor from scratch
+ - Implementation of HOG feature descriptor from scratch
  - Negative Hard Mining
  - Additional Dataset of positive training images
  - Implementation of Dense Neural Network in Python (using Keras) for classification.
 
 The base implementation is quite fast. One complete run can take anywhere from 25s to 2min depending on parameters like HOG cell size, threshold for SVM classification, etc. The training images is the Caltech face dataset, cropped to 36 x 36 sized faces. The non-face training images are random (36 x 36) sized crops of non-face scene images.
 
+
+http://htmlpreview.github.io/?https://github.com/anishagartia/Face-Detection/blob/master/html/index.html
