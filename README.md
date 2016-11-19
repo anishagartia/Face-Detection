@@ -1,4 +1,4 @@
-# Face-Detection
+# Face Detection using Sliding Window
 The sliding window model is conceptually simple: independently classify all image patches as being object or non-object. Sliding window classification is the dominant paradigm in object detection and for one object category in particular -- faces -- it is one of the most noticeable successes of computer vision. For example, modern cameras and photo organization tools have prominent face detection capabilities. 
 
 In this project, we perform the task of Face Detection. Face detection is used in various imagine tasks, and even in common objects like camera as shown in the image. The main method used is generation of Histogram Oriented Gradient features using Sliding window, as described in Dalal-Triggs paper. For classifying the sliding windows, we train a linear SVM.
