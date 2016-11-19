@@ -13,4 +13,5 @@ In addition to the base implementation, we also implement various add-on techniq
 The base implementation is quite fast. One complete run can take anywhere from 25s to 2min depending on parameters like HOG cell size, threshold for SVM classification, etc. The training images is the Caltech face dataset, cropped to 36 x 36 sized faces. The non-face training images are random (36 x 36) sized crops of non-face scene images.
 
 The results, analysis and visualization of the project can be found on the html page:
+
 http://htmlpreview.github.io/?https://github.com/anishagartia/Face-Detection/blob/master/html/index.html
