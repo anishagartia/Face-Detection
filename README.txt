@@ -13,6 +13,6 @@ use_hard_negative_mining = false;
 use_lfw_dataset = false;
 use_neural_net = false;
 
-4. For the neural network, test_model.py must be executed separately. Eras is not included in submission. The code WILL BREAK if keras and python 3.5 are not installed in the system. There are no input parameters required to execute test_model.py. After executing test_model.py, run the validation cell of proj5 again. 
+4. For the neural network, test_model.py must be executed separately. Keras is not included in submission. The code WILL BREAK if keras and python 3.5 are not installed in the system. There are no input parameters required to execute test_model.py. After executing test_model.py, run the validation cell of proj5 again. 
 
 
